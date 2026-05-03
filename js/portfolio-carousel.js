@@ -1,7 +1,7 @@
 (function ($) {
     'use strict';
 
-    var INTERVAL_MS = 6500;
+    var INTERVAL_MS = 5000;
 
     function initPortfolioCarousel() {
         var $layout = $('#portfolioCarousel');
@@ -14,14 +14,18 @@
         var $slides = $track.children('.portfolio-tricks-slide');
         var $menuBtns = $('#portfolioTricksMenu').find('.portfolio-tricks-menu-item');
         var $copyLayers = $('#portfolioCopyStack').children('.portfolio-copy-layer');
+        var $prevBtn = $layout.find('.portfolio-tricks-arrow-prev');
+        var $nextBtn = $layout.find('.portfolio-tricks-arrow-next');
 
-        var count = $slides.length;
-        if (!count || !$viewport.length) {
+        var realCount = $menuBtns.length;
+        if (!realCount || !$viewport.length || !$slides.length) {
             return;
         }
 
+        var loop = realCount > 1;
         var index = 0;
         var autoplayTimer = null;
+        var pendingJump = null;
         var prefersReducedMotion =
             typeof window.matchMedia === 'function' &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -29,71 +33,165 @@
         var $modal = $('#portfolioPhotoModal');
         var $lightboxImg = $('#portfolio-lightbox-img');
 
-        var dragState = {
-            active: false,
-            pointerId: null,
-            startX: 0,
-            startScroll: 0,
-            dragged: false
-        };
-
-        function scrollBehavior() {
-            return prefersReducedMotion ? 'auto' : 'smooth';
+        function domIndexForReal(r) {
+            if (!loop) {
+                return r;
+            }
+            return r + 1;
         }
 
-        function setActive(i) {
-            index = ((i % count) + count) % count;
+        function setActive(realIdx) {
+            index = ((realIdx % realCount) + realCount) % realCount;
+            $slides.filter('[data-dom-role="real"]').removeClass('is-active');
+            $slides.filter('[data-dom-role="real"][data-real-index="' + index + '"]').addClass('is-active');
             $menuBtns.removeClass('is-active').removeAttr('aria-current');
-            $menuBtns.eq(index).addClass('is-active').attr('aria-current', 'true');
+            var $activeMenu = $menuBtns.eq(index).addClass('is-active').attr('aria-current', 'true');
             $copyLayers.removeClass('is-active');
             $copyLayers.eq(index).addClass('is-active');
+            if ($activeMenu.length) {
+                $activeMenu[0].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+            }
         }
 
-        function nearestIndexFromScroll() {
-            var center = $viewport.scrollLeft() + $viewport.outerWidth() / 2;
-            var bestIdx = 0;
-            var bestDist = Infinity;
-            $slides.each(function (idx) {
-                var el = this;
-                var mid = el.offsetLeft + el.offsetWidth / 2;
-                var d = Math.abs(center - mid);
-                if (d < bestDist) {
-                    bestDist = d;
-                    bestIdx = idx;
-                }
-            });
-            return bestIdx;
-        }
-
-        function scrollToSlide(i, smooth) {
-            var el = $slides.get(i);
-            if (!el) {
+        function centerDomSlide(domIdx, animate) {
+            var slide = $slides.get(domIdx);
+            if (!slide) {
                 return;
             }
-            var vpW = $viewport.outerWidth();
-            var slideW = el.offsetWidth;
-            var left = el.offsetLeft - (vpW - slideW) / 2;
-            var max = Math.max(0, $track.outerWidth() - vpW);
-            var target = Math.max(0, Math.min(left, max));
-            $viewport[0].scrollTo({
-                left: target,
-                behavior: smooth === false || prefersReducedMotion ? 'auto' : scrollBehavior()
-            });
-            setActive(i);
+            if (animate === false || prefersReducedMotion) {
+                $track.css('transition', 'none');
+            } else {
+                $track.css('transition', 'transform 0.45s ease');
+            }
+            var left = slide.offsetLeft - ($viewport.outerWidth() - slide.offsetWidth) / 2;
+            $track.css('transform', 'translateX(' + (-left) + 'px)');
         }
 
-        var scrollSyncScheduled = false;
-        function onViewportScroll() {
-            if (scrollSyncScheduled) {
+        function goToReal(realIdx, animate) {
+            pendingJump = null;
+            var r = ((realIdx % realCount) + realCount) % realCount;
+            setActive(r);
+            centerDomSlide(domIndexForReal(r), animate);
+        }
+
+        function next() {
+            if (!loop) {
+                goToReal(0, true);
                 return;
             }
-            scrollSyncScheduled = true;
-            window.requestAnimationFrame(function () {
-                scrollSyncScheduled = false;
-                var ni = nearestIndexFromScroll();
-                if (ni !== index) {
-                    setActive(ni);
+            if (prefersReducedMotion) {
+                goToReal(index + 1, false);
+                return;
+            }
+            if (index === realCount - 1) {
+                pendingJump = 'wrapToFirst';
+                setActive(0);
+                centerDomSlide(realCount + 1, true);
+            } else {
+                goToReal(index + 1, true);
+            }
+        }
+
+        function prev() {
+            if (!loop) {
+                goToReal(0, true);
+                return;
+            }
+            if (prefersReducedMotion) {
+                goToReal(index - 1, false);
+                return;
+            }
+            if (index === 0) {
+                pendingJump = 'wrapToLast';
+                setActive(realCount - 1);
+                centerDomSlide(0, true);
+            } else {
+                goToReal(index - 1, true);
+            }
+        }
+
+        function bindNavigation() {
+            $menuBtns.on('click', function () {
+                var i = parseInt($(this).attr('data-slide-index'), 10);
+                if (!isNaN(i)) {
+                    goToReal(i, true);
+                    stopAutoplay();
+                    startAutoplay();
                 }
+            });
+
+            $prevBtn.on('click', function () {
+                prev();
+                stopAutoplay();
+                startAutoplay();
+            });
+
+            $nextBtn.on('click', function () {
+                next();
+                stopAutoplay();
+                startAutoplay();
+            });
+        }
+
+        function bindSlideClicks() {
+            $track.on('click', '.portfolio-tricks-slide-hit', function (e) {
+                var $hit = $(this);
+                var media = (($hit.attr('data-media') || '') + '').toLowerCase();
+                var youtubeUrl = ($hit.attr('data-youtube-url') || '').trim();
+                var imgSrc = ($hit.attr('data-image-src') || '').trim();
+                var altZh = ($hit.attr('data-title-zh') || '').trim();
+                var altEn = ($hit.attr('data-title-en') || '').trim();
+                var alt = altZh || altEn;
+
+                if (media === 'video' && youtubeUrl) {
+                    e.preventDefault();
+                    window.open(youtubeUrl, '_blank', 'noopener,noreferrer');
+                    return;
+                }
+
+                if (imgSrc) {
+                    e.preventDefault();
+                    $lightboxImg.attr('src', imgSrc).attr('alt', alt);
+                    stopAutoplay();
+                    $modal.modal('show');
+                }
+            });
+        }
+
+        function bindTrackTransitionEnd() {
+            if (!loop || prefersReducedMotion) {
+                return;
+            }
+            $track.on('transitionend', function (e) {
+                if (e.target !== $track[0]) {
+                    return;
+                }
+                var prop = e.originalEvent ? e.originalEvent.propertyName : e.propertyName;
+                if (prop && prop !== 'transform') {
+                    return;
+                }
+                if (pendingJump === 'wrapToFirst') {
+                    pendingJump = null;
+                    centerDomSlide(1, false);
+                } else if (pendingJump === 'wrapToLast') {
+                    pendingJump = null;
+                    centerDomSlide(realCount, false);
+                }
+            });
+        }
+
+        function bindAutoplayPause() {
+            $layout.on('mouseenter', stopAutoplay);
+            $layout.on('mouseleave', function () {
+                if (!$modal.hasClass('in')) {
+                    startAutoplay();
+                }
+            });
+        }
+
+        function bindResize() {
+            $(window).on('resize', function () {
+                centerDomSlide(domIndexForReal(index), false);
             });
         }
 
@@ -106,119 +204,11 @@
 
         function startAutoplay() {
             stopAutoplay();
-            if (prefersReducedMotion || count <= 1) {
+            if (prefersReducedMotion || realCount <= 1) {
                 return;
             }
-            autoplayTimer = setInterval(function () {
-                var next = (index + 1) % count;
-                scrollToSlide(next, true);
-            }, INTERVAL_MS);
+            autoplayTimer = setInterval(next, INTERVAL_MS);
         }
-
-        function onDragPointerDown(e) {
-            if (e.pointerType === 'mouse' && e.button !== 0) {
-                return;
-            }
-            dragState.dragged = false;
-            dragState.active = true;
-            dragState.pointerId = e.pointerId;
-            dragState.startX = e.clientX;
-            dragState.startScroll = $viewport.scrollLeft();
-            $viewport.addClass('is-dragging');
-            stopAutoplay();
-            try {
-                e.currentTarget.setPointerCapture(e.pointerId);
-            } catch (ignore) {}
-        }
-
-        function onDragPointerMove(e) {
-            if (!dragState.active || e.pointerId !== dragState.pointerId) {
-                return;
-            }
-            var dx = e.clientX - dragState.startX;
-            if (Math.abs(dx) > 6) {
-                dragState.dragged = true;
-            }
-            $viewport.scrollLeft(dragState.startScroll - dx);
-        }
-
-        function onDragPointerUp(e) {
-            if (!dragState.active || e.pointerId !== dragState.pointerId) {
-                return;
-            }
-            dragState.active = false;
-            $viewport.removeClass('is-dragging');
-            try {
-                e.currentTarget.releasePointerCapture(e.pointerId);
-            } catch (ignore) {}
-            dragState.pointerId = null;
-            startAutoplay();
-        }
-
-        $viewport.on('scroll', onViewportScroll);
-
-        $viewport[0].addEventListener('pointerdown', onDragPointerDown);
-        $viewport[0].addEventListener('pointermove', onDragPointerMove);
-        $viewport[0].addEventListener('pointerup', onDragPointerUp);
-        $viewport[0].addEventListener('pointercancel', onDragPointerUp);
-
-        $menuBtns.on('click', function () {
-            var i = parseInt($(this).attr('data-slide-index'), 10);
-            if (!isNaN(i)) {
-                scrollToSlide(i, true);
-                stopAutoplay();
-                startAutoplay();
-            }
-        });
-
-        $viewport.on('keydown', function (e) {
-            if (e.keyCode === 37) {
-                scrollToSlide(index - 1, true);
-                stopAutoplay();
-                startAutoplay();
-            } else if (e.keyCode === 39) {
-                scrollToSlide(index + 1, true);
-                stopAutoplay();
-                startAutoplay();
-            }
-        });
-
-        $viewport.on('mouseenter', stopAutoplay);
-        $viewport.on('mouseleave', function () {
-            if (!$modal.hasClass('in')) {
-                startAutoplay();
-            }
-        });
-
-        $slides.find('.portfolio-tricks-slide-hit').on('click', function (e) {
-            if (dragState.dragged) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                dragState.dragged = false;
-                return;
-            }
-
-            var $slide = $(this).closest('.portfolio-tricks-slide');
-            var media = (($slide.attr('data-media') || '') + '').toLowerCase();
-            var youtubeUrl = ($slide.attr('data-youtube-url') || '').trim();
-            var imgSrc = ($slide.attr('data-image-src') || '').trim();
-            var altZh = ($slide.attr('data-title-zh') || '').trim();
-            var altEn = ($slide.attr('data-title-en') || '').trim();
-            var alt = altZh || altEn;
-
-            if (media === 'video' && youtubeUrl) {
-                e.preventDefault();
-                window.open(youtubeUrl, '_blank', 'noopener,noreferrer');
-                return;
-            }
-
-            if (imgSrc) {
-                e.preventDefault();
-                $lightboxImg.attr('src', imgSrc).attr('alt', alt);
-                stopAutoplay();
-                $modal.modal('show');
-            }
-        });
 
         $modal.on('shown.bs.modal', stopAutoplay);
 
@@ -227,11 +217,13 @@
             startAutoplay();
         });
 
-        $(window).on('resize', function () {
-            scrollToSlide(index, false);
-        });
-
-        scrollToSlide(0, false);
+        bindNavigation();
+        bindSlideClicks();
+        bindTrackTransitionEnd();
+        bindAutoplayPause();
+        bindResize();
+        setActive(0);
+        centerDomSlide(domIndexForReal(0), false);
         startAutoplay();
     }
 

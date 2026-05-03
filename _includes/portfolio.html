@@ -1,5 +1,8 @@
 <section class="portfolio-carousel-section portfolio-tricks-section no-padding" id="portfolio">
     {% assign portfolio_items = site.data.portfolio %}
+    {% assign first_item = portfolio_items | first %}
+    {% assign last_item = portfolio_items | last %}
+    {% assign last_idx = portfolio_items.size | minus: 1 %}
     <div class="container-fluid">
         <div class="row">
             <div class="col-lg-12 text-center portfolio-tricks-section-head">
@@ -10,8 +13,8 @@
         </div>
         <div class="portfolio-tricks-layout" id="portfolioCarousel">
             <div class="portfolio-tricks-col portfolio-tricks-col--content">
-                <p class="portfolio-tricks-drag description" lang="zh">拖动浏览</p>
-                <p class="portfolio-tricks-drag description" lang="en">DRAG</p>
+                <p class="portfolio-tricks-drag description" lang="zh">箭头浏览</p>
+                <p class="portfolio-tricks-drag description" lang="en">ARROWS</p>
 
                 <div class="portfolio-copy-stack" id="portfolioCopyStack" aria-live="polite">
                     {% for item in portfolio_items %}
@@ -45,16 +48,37 @@
             </div>
 
             <div class="portfolio-tricks-col portfolio-tricks-col--slider">
-                <div class="portfolio-tricks-viewport" id="portfolioSliderViewport" tabindex="0">
+                <div class="portfolio-tricks-viewport" id="portfolioSliderViewport">
+                    <button type="button" class="portfolio-tricks-arrow portfolio-tricks-arrow-prev" aria-label="Previous slide">
+                        <i class="fa fa-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="portfolio-tricks-arrow portfolio-tricks-arrow-next" aria-label="Next slide">
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    </button>
                     <div class="portfolio-tricks-track" id="portfolioSliderTrack">
+                        {% if portfolio_items.size > 1 and last_item %}
+                        <div class="portfolio-tricks-slide portfolio-tricks-slide--clone" data-dom-role="clone" data-real-index="{{ last_idx }}" aria-hidden="true">
+                            <button type="button" class="portfolio-tricks-slide-hit" tabindex="-1"
+                                    data-media="{{ last_item.media }}"
+                                    {% if last_item.youtube_url %}data-youtube-url="{{ last_item.youtube_url }}"{% endif %}
+                                    data-image-src="{{ last_item.image | relative_url }}"
+                                    data-title-zh="{{ last_item.title_zh }}"
+                                    data-title-en="{{ last_item.title_en }}"
+                                    aria-hidden="true">
+                                <span class="portfolio-tricks-slide-frame">
+                                    <img src="{{ last_item.image | relative_url }}" alt="" class="portfolio-tricks-slide-img img-responsive">
+                                </span>
+                            </button>
+                        </div>
+                        {% endif %}
                         {% for item in portfolio_items %}
-                        <div class="portfolio-tricks-slide"
-                             data-media="{{ item.media }}"
-                             {% if item.youtube_url %}data-youtube-url="{{ item.youtube_url }}"{% endif %}
-                             data-image-src="{{ item.image | relative_url }}"
-                             data-title-zh="{{ item.title_zh }}"
-                             data-title-en="{{ item.title_en }}">
+                        <div class="portfolio-tricks-slide" data-dom-role="real" data-real-index="{{ forloop.index0 }}">
                             <button type="button" class="portfolio-tricks-slide-hit"
+                                    data-media="{{ item.media }}"
+                                    {% if item.youtube_url %}data-youtube-url="{{ item.youtube_url }}"{% endif %}
+                                    data-image-src="{{ item.image | relative_url }}"
+                                    data-title-zh="{{ item.title_zh }}"
+                                    data-title-en="{{ item.title_en }}"
                                     aria-label="{% if item.media == 'video' %}Open video{% else %}View larger photo{% endif %}: {{ item.title_zh }}">
                                 <span class="portfolio-tricks-slide-frame">
                                     <img src="{{ item.image | relative_url }}" alt="{{ item.title_zh }}" class="portfolio-tricks-slide-img img-responsive">
@@ -62,6 +86,21 @@
                             </button>
                         </div>
                         {% endfor %}
+                        {% if portfolio_items.size > 1 and first_item %}
+                        <div class="portfolio-tricks-slide portfolio-tricks-slide--clone" data-dom-role="clone" data-real-index="0" aria-hidden="true">
+                            <button type="button" class="portfolio-tricks-slide-hit" tabindex="-1"
+                                    data-media="{{ first_item.media }}"
+                                    {% if first_item.youtube_url %}data-youtube-url="{{ first_item.youtube_url }}"{% endif %}
+                                    data-image-src="{{ first_item.image | relative_url }}"
+                                    data-title-zh="{{ first_item.title_zh }}"
+                                    data-title-en="{{ first_item.title_en }}"
+                                    aria-hidden="true">
+                                <span class="portfolio-tricks-slide-frame">
+                                    <img src="{{ first_item.image | relative_url }}" alt="" class="portfolio-tricks-slide-img img-responsive">
+                                </span>
+                            </button>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>

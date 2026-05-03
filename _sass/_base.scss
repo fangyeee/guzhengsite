@@ -494,24 +494,48 @@ header {
     }
 }
 
+.portfolio-tricks-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 4;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+    &:hover,
+    &:focus {
+        background: rgba(0, 0, 0, 0.75);
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $theme-primary;
+        outline-offset: 2px;
+    }
+}
+
+.portfolio-tricks-arrow-prev {
+    left: 10px;
+}
+
+.portfolio-tricks-arrow-next {
+    right: 10px;
+}
+
 .portfolio-tricks-viewport {
     position: relative;
     width: 100%;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    cursor: grab;
-    touch-action: pan-x pinch-zoom;
-    -webkit-overflow-scrolling: touch;
-
-    &.is-dragging {
-        cursor: grabbing;
-        user-select: none;
-
-        .portfolio-tricks-slide-img {
-            pointer-events: none;
-        }
-    }
 
     &:focus {
         outline: none;
@@ -527,10 +551,11 @@ header {
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    gap: 0;
+    gap: 18px;
     position: relative;
     min-height: min(56vh, 520px);
     padding: 8px 0 16px;
+    transition: transform 0.45s ease;
 
     @media (max-width: 991px) {
         min-height: min(48vh, 420px);
@@ -541,12 +566,19 @@ header {
 
 .portfolio-tricks-slide {
     flex: 0 0 auto;
-    width: min(82vw, 720px);
-    margin-right: 20px;
-    scroll-snap-align: center;
+    width: min(70vw, 620px);
+    display: flex;
+    justify-content: center;
+    transition: transform 0.35s ease, opacity 0.35s ease;
+    opacity: 0.65;
 
-    &:last-child {
-        margin-right: 0;
+    &.portfolio-tricks-slide--clone {
+        pointer-events: none;
+    }
+
+    &.is-active {
+        opacity: 1;
+        transform: scale(1.02);
     }
 }
 
