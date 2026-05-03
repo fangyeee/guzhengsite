@@ -1,141 +1,83 @@
-<section class="no-padding" id="portfolio">
+<section class="portfolio-carousel-section portfolio-tricks-section no-padding" id="portfolio">
+    {% assign portfolio_items = site.data.portfolio %}
     <div class="container-fluid">
-        <div class="row no-gutter">
-            <div class="col-lg-4 col-sm-9">
-                <a href="https://www.youtube.com/watch?v=emMDwUDaYPQ" class="portfolio-box">
-                    <img src="img/portfolio/performance1.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                老师演奏
-                            </div>
-                            <div class="project-name">
-                                《权御天下》
-                            </div>
-                        </div>
-                    </div>
-                </a>
+        <div class="row">
+            <div class="col-lg-12 text-center portfolio-tricks-section-head">
+                <h2 class="section-heading description" lang="zh">教学展示</h2>
+                <h2 class="section-heading description" lang="en">Portfolio</h2>
+                <hr class="primary">
             </div>
-            <div class="col-lg-4 col-sm-9">
-                <a href="https://www.youtube.com/watch?v=_wIW99rTPaU" target="_blank" class="portfolio-box">
-                    <img src="img/portfolio/performance2.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                老师演奏
-                            </div>
-                            <div class="project-name">
-                                《梁祝》+《禅院钟声》
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-lg-4 col-sm-9">
-                <a href="https://www.youtube.com/watch?v=kFV4nYDS6Kg" target="_blank" class="portfolio-box">
-                    <img src="img/portfolio/performance3.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                老师演奏
-                            </div>
-                            <div class="project-name">
-                                《知否知否》
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-lg-4 col-sm-9">
-                <a href="https://www.youtube.com/watch?v=nd6FvHKyxYs" target="_blank" class="portfolio-box">
-                    <img src="img/portfolio/student_recording3.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                学生演奏
-                            </div>
-                            <div class="project-name">
-                                《渔舟唱晚》
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>           
+        </div>
+        <div class="portfolio-tricks-layout" id="portfolioCarousel">
+            <div class="portfolio-tricks-col portfolio-tricks-col--content">
+                <p class="portfolio-tricks-drag description" lang="zh">拖动浏览</p>
+                <p class="portfolio-tricks-drag description" lang="en">DRAG</p>
 
-            <div class="col-lg-4 col-sm-9">
-                <a href="https://www.youtube.com/watch?v=GWX6OagbsOs" target="_blank" class="portfolio-box">
-                    <img src="img/portfolio/student_recording2.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                学生演奏
-                            </div>
-                            <div class="project-name">
-                                《浏阳河》
-                            </div>
-                        </div>
-                    </div>
-                </a>
+                <div class="portfolio-copy-stack" id="portfolioCopyStack" aria-live="polite">
+                    {% for item in portfolio_items %}
+                    <article class="portfolio-copy-layer{% if forloop.first %} is-active{% endif %}" data-slide-index="{{ forloop.index0 }}">
+                        <h3 class="portfolio-copy-title">
+                            <span class="description" lang="zh">{{ item.title_zh }}</span>
+                            <span class="description" lang="en">{{ item.title_en }}</span>
+                        </h3>
+                        <p class="portfolio-copy-desc">
+                            <span class="description" lang="zh">{{ item.description_zh }}</span>
+                            <span class="description" lang="en">{{ item.description_en }}</span>
+                        </p>
+                    </article>
+                    {% endfor %}
+                </div>
+
+                <nav class="portfolio-tricks-menu" id="portfolioTricksMenu" aria-label="Portfolio slides">
+                    {% for item in portfolio_items %}
+                    <button type="button"
+                            class="portfolio-tricks-menu-item{% if forloop.first %} is-active{% endif %}"
+                            data-slide-index="{{ forloop.index0 }}"
+                            {% if forloop.first %}aria-current="true"{% endif %}>
+                        <span class="portfolio-tricks-num">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                        <span class="portfolio-tricks-menu-titles">
+                            <span class="description portfolio-tricks-menu-title-line" lang="zh">{{ item.title_zh }}</span>
+                            <span class="description portfolio-tricks-menu-title-line" lang="en">{{ item.title_en }}</span>
+                        </span>
+                    </button>
+                    {% endfor %}
+                </nav>
             </div>
-            <div class="col-lg-4 col-sm-9">
-                <a href="https://www.youtube.com/watch?v=tacJKI1el68" target="_blank" class="portfolio-box">
-                    <img src="img/portfolio/student_recording1.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                学生演奏
-                            </div>
-                            <div class="project-name">
-                                《洞庭新歌》
-                            </div>
+
+            <div class="portfolio-tricks-col portfolio-tricks-col--slider">
+                <div class="portfolio-tricks-viewport" id="portfolioSliderViewport" tabindex="0">
+                    <div class="portfolio-tricks-track" id="portfolioSliderTrack">
+                        {% for item in portfolio_items %}
+                        <div class="portfolio-tricks-slide"
+                             data-media="{{ item.media }}"
+                             {% if item.youtube_url %}data-youtube-url="{{ item.youtube_url }}"{% endif %}
+                             data-image-src="{{ item.image | relative_url }}"
+                             data-title-zh="{{ item.title_zh }}"
+                             data-title-en="{{ item.title_en }}">
+                            <button type="button" class="portfolio-tricks-slide-hit"
+                                    aria-label="{% if item.media == 'video' %}Open video{% else %}View larger photo{% endif %}: {{ item.title_zh }}">
+                                <span class="portfolio-tricks-slide-frame">
+                                    <img src="{{ item.image | relative_url }}" alt="{{ item.title_zh }}" class="portfolio-tricks-slide-img img-responsive">
+                                </span>
+                            </button>
                         </div>
+                        {% endfor %}
                     </div>
-                </a>
+                </div>
             </div>
-            <div class="col-lg-4 col-sm-9">
-                <a href="https://www.youtube.com/watch?v=GWX6OagbsOs" class="portfolio-box">
-                    <img src="img/portfolio/student1.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                学生合影
-                            </div>
-                            <div class="project-name">
-                                2023 Milpitas古筝演出
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-lg-4 col-sm-9">
-                <a class="portfolio-box">
-                    <img src="img/portfolio/student2.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                学生合影
-                            </div>
-                            <div class="project-name">
-                                2024 Palo Alto Recital
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-lg-4 col-sm-9">
-                <a href="#" class="portfolio-box">
-                    <img src="img/portfolio/student3.jpg" class="img-responsive" alt="">
-                    <div class="portfolio-box-caption">
-                        <div class="portfolio-box-caption-content">
-                            <div class="project-category text-faded">
-                                学生合影
-                            </div>
-                            <div class="project-name">
-                                1对2环境
-                            </div>
-                        </div>
-                    </div>
-                </a>
+        </div>
+    </div>
+
+    <div class="modal fade" id="portfolioPhotoModal" tabindex="-1" role="dialog" aria-labelledby="portfolioPhotoModalHeading">
+        <div class="modal-dialog modal-lg portfolio-photo-modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title sr-only" id="portfolioPhotoModalHeading">Photo</h4>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="portfolio-lightbox-img" src="" alt="" class="img-responsive portfolio-lightbox-img">
+                </div>
             </div>
         </div>
     </div>

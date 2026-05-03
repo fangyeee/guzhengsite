@@ -1,0 +1,72 @@
+# Portfolio showcase (order = slide order).
+# media: photo → lightbox; video → youtube_url in new tab.
+# Title + short description per language (carousel + menu use these).
+
+- image: img/portfolio/performance1.jpg
+  media: video
+  youtube_url: https://www.youtube.com/watch?v=emMDwUDaYPQ
+  title_zh: 《权御天下》
+  title_en: The Emperor's Conquest
+  description_zh: 老师演奏录像
+  description_en: Teacher performance video
+
+- image: img/portfolio/performance2.jpg
+  media: video
+  youtube_url: https://www.youtube.com/watch?v=_wIW99rTPaU
+  title_zh: 《梁祝》+《禅院钟声》
+  title_en: Butterfly Lovers · Zen Temple Bells
+  description_zh: 老师演奏录像
+  description_en: Teacher performance video
+
+- image: img/portfolio/performance3.jpg
+  media: video
+  youtube_url: https://www.youtube.com/watch?v=kFV4nYDS6Kg
+  title_zh: 《知否知否》
+  title_en: Like the Song Says
+  description_zh: 老师演奏录像
+  description_en: Teacher performance video
+
+- image: img/portfolio/student_recording3.jpg
+  media: video
+  youtube_url: https://www.youtube.com/watch?v=nd6FvHKyxYs
+  title_zh: 《渔舟唱晚》
+  title_en: Evening Song of the Fishing Boats
+  description_zh: 学生演奏录像
+  description_en: Student performance video
+
+- image: img/portfolio/student_recording2.jpg
+  media: video
+  youtube_url: https://www.youtube.com/watch?v=GWX6OagbsOs
+  title_zh: 《浏阳河》
+  title_en: Liuyang River
+  description_zh: 学生演奏录像
+  description_en: Student performance video
+
+- image: img/portfolio/student_recording1.jpg
+  media: video
+  youtube_url: https://www.youtube.com/watch?v=tacJKI1el68
+  title_zh: 《洞庭新歌》
+  title_en: A New Song from Dongting Lake
+  description_zh: 学生演奏录像
+  description_en: Student performance video
+
+- image: img/portfolio/student1.jpg
+  media: photo
+  title_zh: 2023 Milpitas 古筝演出
+  title_en: 2023 Milpitas guzheng showcase
+  description_zh: 学生合影
+  description_en: Student group photo
+
+- image: img/portfolio/student2.jpg
+  media: photo
+  title_zh: 2024 Palo Alto 汇报演出
+  title_en: 2024 Palo Alto recital
+  description_zh: 学生合影
+  description_en: Student group photo
+
+- image: img/portfolio/student3.jpg
+  media: photo
+  title_zh: 一对一 · 一对二教室
+  title_en: Private and pair lessons
+  description_zh: 教学环境一览
+  description_en: Teaching space
