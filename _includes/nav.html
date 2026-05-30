@@ -55,9 +55,12 @@
         // Convert HTMLCollection to array
         const text = Array.from(elements);
         text.forEach(element => {
-            console.log(element);
             if (element.lang == lang) {
-                element.style.display = 'block';
+                // <a> must not use `block` or links like the hero CTA stretch full width.
+                element.style.display =
+                    element.tagName && element.tagName.toLowerCase() === 'a'
+                        ? 'inline-block'
+                        : 'block';
             } else {
                 element.style.display = 'none';
             }

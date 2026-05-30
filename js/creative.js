@@ -27,13 +27,8 @@
         $('.navbar-toggle:visible').click();
     });
 
-    // Fit Text Plugin for Main Header
-    $("h1").fitText(
-        1.2, {
-            minFontSize: '35px',
-            maxFontSize: '65px'
-        }
-    );
+    // Main header title size is controlled in _sass/_base.scss (header h1).
+    // FitText was removed: it set inline font-size on every h1 and overrode CSS.
 
     // Offset for Main Navigation
     $('#mainNav').affix({

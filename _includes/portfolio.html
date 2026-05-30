@@ -4,17 +4,10 @@
     {% assign last_item = portfolio_items | last %}
     {% assign last_idx = portfolio_items.size | minus: 1 %}
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-lg-12 text-center portfolio-tricks-section-head">
-                <h2 class="section-heading description" lang="zh">教学展示</h2>
-                <h2 class="section-heading description" lang="en">Portfolio</h2>
-                <hr class="primary">
-            </div>
-        </div>
         <div class="portfolio-tricks-layout" id="portfolioCarousel">
             <div class="portfolio-tricks-col portfolio-tricks-col--content">
-                <p class="portfolio-tricks-drag description" lang="zh">箭头浏览</p>
-                <p class="portfolio-tricks-drag description" lang="en">ARROWS</p>
+                <p class="portfolio-tricks-drag description" lang="zh">教学展示</p>
+                <p class="portfolio-tricks-drag description" lang="en">Showcase</p>
 
                 <div class="portfolio-copy-stack" id="portfolioCopyStack" aria-live="polite">
                     {% for item in portfolio_items %}
@@ -23,10 +16,6 @@
                             <span class="description" lang="zh">{{ item.title_zh }}</span>
                             <span class="description" lang="en">{{ item.title_en }}</span>
                         </h3>
-                        <p class="portfolio-copy-desc">
-                            <span class="description" lang="zh">{{ item.description_zh }}</span>
-                            <span class="description" lang="en">{{ item.description_en }}</span>
-                        </p>
                     </article>
                     {% endfor %}
                 </div>
@@ -48,6 +37,7 @@
             </div>
 
             <div class="portfolio-tricks-col portfolio-tricks-col--slider">
+                <div class="portfolio-tricks-slider-block">
                 <div class="portfolio-tricks-viewport" id="portfolioSliderViewport">
                     <button type="button" class="portfolio-tricks-arrow portfolio-tricks-arrow-prev" aria-label="Previous slide">
                         <i class="fa fa-chevron-left" aria-hidden="true"></i>
@@ -102,6 +92,11 @@
                         </div>
                         {% endif %}
                     </div>
+                </div>
+                <p class="portfolio-tricks-hint text-center">
+                    <span class="description" lang="en">Click above to view larger photo or Youtube video</span>
+                    <span class="description" lang="zh">点击上方查看大图和视频</span>
+                </p>
                 </div>
             </div>
         </div>

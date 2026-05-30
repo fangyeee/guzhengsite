@@ -32,6 +32,100 @@
 
         var $modal = $('#portfolioPhotoModal');
         var $lightboxImg = $('#portfolio-lightbox-img');
+        var $menuNav = $('#portfolioTricksMenu');
+        var $copyStack = $('#portfolioCopyStack');
+        var fitCopyTimer = null;
+
+        function fitOneLineText($el, availW, minFs, maxFs) {
+            if (!$el || !$el.length || availW < 48) {
+                return;
+            }
+            var el = $el[0];
+            $el.css({
+                whiteSpace: 'nowrap',
+                display: 'block',
+                width: '100%',
+                overflow: 'hidden',
+                textOverflow: 'clip'
+            });
+            var lo = minFs;
+            var hi = maxFs;
+            var best = minFs;
+            var i;
+            for (i = 0; i < 22; i++) {
+                var mid = (lo + hi) / 2;
+                $el.css('font-size', mid + 'px');
+                if (el.scrollWidth <= availW + 1) {
+                    best = mid;
+                    lo = mid;
+                } else {
+                    hi = mid;
+                }
+                if (hi - lo < 0.35) {
+                    break;
+                }
+            }
+            $el.css('font-size', best + 'px');
+        }
+
+        function fitCopyStackOneLine() {
+            if (!$copyStack.length) {
+                return;
+            }
+            var $layer = $copyStack.children('.portfolio-copy-layer.is-active');
+            if (!$layer.length) {
+                return;
+            }
+            var availW = $copyStack[0].clientWidth;
+            if (!availW) {
+                return;
+            }
+            var $titleSpan = $layer.find('.portfolio-copy-title .description').filter(':visible').first();
+            if ($titleSpan.length) {
+                fitOneLineText($titleSpan, availW, 11, 34);
+            }
+        }
+
+        function scheduleFitCopyStack() {
+            if (fitCopyTimer) {
+                window.clearTimeout(fitCopyTimer);
+            }
+            fitCopyTimer = window.setTimeout(function () {
+                fitCopyTimer = null;
+                fitCopyStackOneLine();
+            }, 30);
+        }
+
+        function scrollMenuToActive($activeMenu) {
+            var menu = $menuNav[0];
+            if (!menu || !$activeMenu.length) {
+                return;
+            }
+            var item = $activeMenu[0];
+            if (menu.scrollHeight > menu.clientHeight + 2) {
+                var mr = menu.getBoundingClientRect();
+                var ir = item.getBoundingClientRect();
+                var delta =
+                    ir.top + ir.height / 2 - (mr.top + mr.height / 2);
+                var nextTop = menu.scrollTop + delta;
+                var maxTop = Math.max(0, menu.scrollHeight - menu.clientHeight);
+                menu.scrollTo({
+                    top: Math.max(0, Math.min(nextTop, maxTop)),
+                    behavior: 'smooth'
+                });
+            } else if (menu.scrollWidth > menu.clientWidth + 2) {
+                var mrx = menu.getBoundingClientRect();
+                var irx = item.getBoundingClientRect();
+                var deltaX =
+                    irx.left + irx.width / 2 - (mrx.left + mrx.width / 2);
+                var nextLeft = menu.scrollLeft + deltaX;
+                var maxLeft = Math.max(0, menu.scrollWidth - menu.clientWidth);
+                menu.scrollTo({
+                    left: Math.max(0, Math.min(nextLeft, maxLeft)),
+                    behavior: 'smooth'
+                });
+            }
+        }
 
         function domIndexForReal(r) {
             if (!loop) {
@@ -48,9 +142,8 @@
             var $activeMenu = $menuBtns.eq(index).addClass('is-active').attr('aria-current', 'true');
             $copyLayers.removeClass('is-active');
             $copyLayers.eq(index).addClass('is-active');
-            if ($activeMenu.length) {
-                $activeMenu[0].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
-            }
+            scrollMenuToActive($activeMenu);
+            scheduleFitCopyStack();
         }
 
         function centerDomSlide(domIdx, animate) {
@@ -192,6 +285,23 @@
         function bindResize() {
             $(window).on('resize', function () {
                 centerDomSlide(domIndexForReal(index), false);
+                scheduleFitCopyStack();
+            });
+        }
+
+        function bindCopyStackResizeObserver() {
+            if (typeof window.ResizeObserver === 'undefined' || !$copyStack.length) {
+                return;
+            }
+            var ro = new window.ResizeObserver(function () {
+                scheduleFitCopyStack();
+            });
+            ro.observe($copyStack[0]);
+        }
+
+        function bindLanguageFit() {
+            $(document.body).on('click', 'a[href*="switchLanguage"]', function () {
+                window.setTimeout(scheduleFitCopyStack, 120);
             });
         }
 
@@ -222,8 +332,11 @@
         bindTrackTransitionEnd();
         bindAutoplayPause();
         bindResize();
+        bindCopyStackResizeObserver();
+        bindLanguageFit();
         setActive(0);
         centerDomSlide(domIndexForReal(0), false);
+        scheduleFitCopyStack();
         startAutoplay();
     }
 
