@@ -304,6 +304,27 @@ header {
 // Portfolio — T.RICKS-style menu + horizontal drag slider (see tricks-menu-slider.webflow.io)
 .portfolio-carousel-section.portfolio-tricks-section {
     padding: 60px 0 0;
+    // vh fallback, then dvh for mobile browsers (iOS Safari address bar)
+    --portfolio-layout-min-h: min(72vh, 640px);
+    --portfolio-slide-h: min(56vh, 520px);
+    --portfolio-slide-w: min(70vw, 620px);
+
+    @media (max-width: 991px) {
+        --portfolio-slide-h: min(48vh, 420px);
+    }
+
+    @supports (height: 1dvh) {
+        --portfolio-layout-min-h: min(72dvh, 640px);
+        --portfolio-slide-h: min(56dvh, 520px);
+
+        @media (max-width: 991px) {
+            --portfolio-slide-h: min(48dvh, 420px);
+        }
+    }
+
+    @supports (width: 1dvw) {
+        --portfolio-slide-w: min(70dvw, 620px);
+    }
 }
 
 .portfolio-tricks-layout {
@@ -312,7 +333,7 @@ header {
     grid-template-areas: 'content slider';
     align-items: stretch;
     margin-top: 24px;
-    min-height: min(72vh, 640px);
+    min-height: var(--portfolio-layout-min-h);
 
     @media (max-width: 991px) {
         grid-template-columns: 1fr;
@@ -382,9 +403,12 @@ header {
 
     .description {
         margin: 0;
+        display: block;
         white-space: nowrap;
         overflow: hidden;
+        text-overflow: ellipsis;
         max-width: 100%;
+        font-size: clamp(11px, 4.2vw, 34px);
     }
 }
 
@@ -405,6 +429,7 @@ header {
         overflow-x: hidden;
         overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
+        scrollbar-gutter: stable;
 
         &::-webkit-scrollbar {
             width: 6px;
@@ -605,24 +630,28 @@ header {
     align-items: stretch;
     gap: 18px;
     position: relative;
-    min-height: min(56vh, 520px);
+    min-height: var(--portfolio-slide-h);
     padding: 8px 0 16px;
     transition: transform 0.45s ease;
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 
     @media (max-width: 991px) {
-        min-height: min(48vh, 420px);
-        padding-left: max(12px, calc(50vw - 42vw));
-        padding-right: max(12px, calc(50vw - 42vw));
+        padding-left: max(12px, 8vw);
+        padding-right: max(12px, 8vw);
     }
 }
 
 .portfolio-tricks-slide {
     flex: 0 0 auto;
-    width: min(70vw, 620px);
+    width: var(--portfolio-slide-w);
     display: flex;
     justify-content: center;
     transition: transform 0.35s ease, opacity 0.35s ease;
     opacity: 0.65;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 
     &.portfolio-tricks-slide--clone {
         pointer-events: none;
@@ -630,7 +659,7 @@ header {
 
     &.is-active {
         opacity: 1;
-        transform: scale(1.02);
+        transform: scale(1.02) translateZ(0);
     }
 }
 
@@ -661,14 +690,10 @@ header {
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: min(56vh, 520px);
+    height: var(--portfolio-slide-h);
     background: #fff;
     border-radius: 4px;
     overflow: hidden;
-
-    @media (max-width: 991px) {
-        height: min(48vh, 420px);
-    }
 }
 
 .portfolio-tricks-slide-img {
@@ -684,6 +709,7 @@ header {
 
     .portfolio-lightbox-img {
         max-height: calc(100vh - 120px);
+        max-height: calc(100dvh - 120px);
         width: auto !important;
         max-width: 100%;
         margin: 0 auto;

@@ -26,6 +26,7 @@
         var index = 0;
         var autoplayTimer = null;
         var pendingJump = null;
+        var resizeTimer = null;
         var prefersReducedMotion =
             typeof window.matchMedia === 'function' &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,67 +34,28 @@
         var $modal = $('#portfolioPhotoModal');
         var $lightboxImg = $('#portfolio-lightbox-img');
         var $menuNav = $('#portfolioTricksMenu');
-        var $copyStack = $('#portfolioCopyStack');
-        var fitCopyTimer = null;
 
-        function fitOneLineText($el, availW, minFs, maxFs) {
-            if (!$el || !$el.length || availW < 48) {
-                return;
+        function scrollMenuCompat(menu, pos) {
+            var smooth = !prefersReducedMotion;
+            var opts = { behavior: smooth ? 'smooth' : 'auto' };
+
+            if (pos.top !== undefined) {
+                opts.top = pos.top;
             }
-            var el = $el[0];
-            $el.css({
-                whiteSpace: 'nowrap',
-                display: 'block',
-                width: '100%',
-                overflow: 'hidden',
-                textOverflow: 'clip'
-            });
-            var lo = minFs;
-            var hi = maxFs;
-            var best = minFs;
-            var i;
-            for (i = 0; i < 22; i++) {
-                var mid = (lo + hi) / 2;
-                $el.css('font-size', mid + 'px');
-                if (el.scrollWidth <= availW + 1) {
-                    best = mid;
-                    lo = mid;
-                } else {
-                    hi = mid;
+            if (pos.left !== undefined) {
+                opts.left = pos.left;
+            }
+
+            try {
+                menu.scrollTo(opts);
+            } catch (err) {
+                if (pos.top !== undefined) {
+                    menu.scrollTop = pos.top;
                 }
-                if (hi - lo < 0.35) {
-                    break;
+                if (pos.left !== undefined) {
+                    menu.scrollLeft = pos.left;
                 }
             }
-            $el.css('font-size', best + 'px');
-        }
-
-        function fitCopyStackOneLine() {
-            if (!$copyStack.length) {
-                return;
-            }
-            var $layer = $copyStack.children('.portfolio-copy-layer.is-active');
-            if (!$layer.length) {
-                return;
-            }
-            var availW = $copyStack[0].clientWidth;
-            if (!availW) {
-                return;
-            }
-            var $titleSpan = $layer.find('.portfolio-copy-title .description').filter(':visible').first();
-            if ($titleSpan.length) {
-                fitOneLineText($titleSpan, availW, 11, 34);
-            }
-        }
-
-        function scheduleFitCopyStack() {
-            if (fitCopyTimer) {
-                window.clearTimeout(fitCopyTimer);
-            }
-            fitCopyTimer = window.setTimeout(function () {
-                fitCopyTimer = null;
-                fitCopyStackOneLine();
-            }, 30);
         }
 
         function scrollMenuToActive($activeMenu) {
@@ -109,9 +71,8 @@
                     ir.top + ir.height / 2 - (mr.top + mr.height / 2);
                 var nextTop = menu.scrollTop + delta;
                 var maxTop = Math.max(0, menu.scrollHeight - menu.clientHeight);
-                menu.scrollTo({
-                    top: Math.max(0, Math.min(nextTop, maxTop)),
-                    behavior: 'smooth'
+                scrollMenuCompat(menu, {
+                    top: Math.max(0, Math.min(nextTop, maxTop))
                 });
             } else if (menu.scrollWidth > menu.clientWidth + 2) {
                 var mrx = menu.getBoundingClientRect();
@@ -120,9 +81,8 @@
                     irx.left + irx.width / 2 - (mrx.left + mrx.width / 2);
                 var nextLeft = menu.scrollLeft + deltaX;
                 var maxLeft = Math.max(0, menu.scrollWidth - menu.clientWidth);
-                menu.scrollTo({
-                    left: Math.max(0, Math.min(nextLeft, maxLeft)),
-                    behavior: 'smooth'
+                scrollMenuCompat(menu, {
+                    left: Math.max(0, Math.min(nextLeft, maxLeft))
                 });
             }
         }
@@ -134,6 +94,45 @@
             return r + 1;
         }
 
+        function setTrackTransform(tx, animate) {
+            if (animate === false || prefersReducedMotion) {
+                $track.css('transition', 'none');
+            } else {
+                $track.css('transition', 'transform 0.45s ease');
+            }
+
+            var rounded = Math.round(tx);
+            var value = 'translate3d(' + rounded + 'px, 0, 0)';
+            $track.css({
+                transform: value,
+                '-webkit-transform': value
+            });
+        }
+
+        function centerDomSlide(domIdx, animate) {
+            var slide = $slides.get(domIdx);
+            var viewportEl = $viewport[0];
+            if (!slide || !viewportEl) {
+                return;
+            }
+
+            // clientWidth ignores scrollbar width — consistent on Mac vs Windows
+            var viewportWidth = viewportEl.clientWidth;
+            var slideWidth = slide.offsetWidth;
+            var left = slide.offsetLeft - (viewportWidth - slideWidth) / 2;
+            setTrackTransform(-left, animate);
+        }
+
+        function scheduleRecenter() {
+            if (resizeTimer) {
+                window.clearTimeout(resizeTimer);
+            }
+            resizeTimer = window.setTimeout(function () {
+                resizeTimer = null;
+                centerDomSlide(domIndexForReal(index), false);
+            }, 50);
+        }
+
         function setActive(realIdx) {
             index = ((realIdx % realCount) + realCount) % realCount;
             $slides.filter('[data-dom-role="real"]').removeClass('is-active');
@@ -143,21 +142,6 @@
             $copyLayers.removeClass('is-active');
             $copyLayers.eq(index).addClass('is-active');
             scrollMenuToActive($activeMenu);
-            scheduleFitCopyStack();
-        }
-
-        function centerDomSlide(domIdx, animate) {
-            var slide = $slides.get(domIdx);
-            if (!slide) {
-                return;
-            }
-            if (animate === false || prefersReducedMotion) {
-                $track.css('transition', 'none');
-            } else {
-                $track.css('transition', 'transform 0.45s ease');
-            }
-            var left = slide.offsetLeft - ($viewport.outerWidth() - slide.offsetWidth) / 2;
-            $track.css('transform', 'translateX(' + (-left) + 'px)');
         }
 
         function goToReal(realIdx, animate) {
@@ -255,7 +239,7 @@
             if (!loop || prefersReducedMotion) {
                 return;
             }
-            $track.on('transitionend', function (e) {
+            $track.on('transitionend webkitTransitionEnd', function (e) {
                 if (e.target !== $track[0]) {
                     return;
                 }
@@ -283,26 +267,28 @@
         }
 
         function bindResize() {
-            $(window).on('resize', function () {
-                centerDomSlide(domIndexForReal(index), false);
-                scheduleFitCopyStack();
-            });
-        }
+            $(window).on('resize orientationchange', scheduleRecenter);
 
-        function bindCopyStackResizeObserver() {
-            if (typeof window.ResizeObserver === 'undefined' || !$copyStack.length) {
-                return;
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', scheduleRecenter);
+                window.visualViewport.addEventListener('scroll', scheduleRecenter);
             }
-            var ro = new window.ResizeObserver(function () {
-                scheduleFitCopyStack();
-            });
-            ro.observe($copyStack[0]);
         }
 
-        function bindLanguageFit() {
+        function bindLanguageRecenter() {
             $(document.body).on('click', 'a[href*="switchLanguage"]', function () {
-                window.setTimeout(scheduleFitCopyStack, 120);
+                window.setTimeout(function () {
+                    centerDomSlide(domIndexForReal(index), false);
+                }, 120);
             });
+        }
+
+        function bindFontsReady() {
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(function () {
+                    centerDomSlide(domIndexForReal(index), false);
+                });
+            }
         }
 
         function stopAutoplay() {
@@ -332,11 +318,10 @@
         bindTrackTransitionEnd();
         bindAutoplayPause();
         bindResize();
-        bindCopyStackResizeObserver();
-        bindLanguageFit();
+        bindLanguageRecenter();
+        bindFontsReady();
         setActive(0);
         centerDomSlide(domIndexForReal(0), false);
-        scheduleFitCopyStack();
         startAutoplay();
     }
 
