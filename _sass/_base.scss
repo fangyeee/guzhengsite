@@ -325,6 +325,11 @@ header {
     @supports (width: 1dvw) {
         --portfolio-slide-w: min(70dvw, 620px);
     }
+
+    @media (max-width: 991px) {
+        overflow-x: clip;
+        max-width: 100%;
+    }
 }
 
 .portfolio-tricks-layout {
@@ -341,6 +346,9 @@ header {
             'slider'
             'content';
         min-height: 0;
+        min-width: 0;
+        overflow-x: clip;
+        max-width: 100%;
     }
 }
 
@@ -352,6 +360,7 @@ header {
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
+    min-width: 0;
 
     @media (min-width: 992px) {
         padding: 36px 28px 44px;
@@ -541,6 +550,9 @@ header {
     justify-content: center;
     align-items: stretch;
     padding: 20px 12px 28px;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
 
     @media (min-width: 992px) {
         padding: 16px 28px 36px;
@@ -552,6 +564,8 @@ header {
     flex-direction: column;
     align-items: stretch;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .portfolio-tricks-hint {
@@ -607,11 +621,19 @@ header {
 .portfolio-tricks-viewport {
     position: relative;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     overflow-x: hidden;
     overflow-y: hidden;
+    container-type: inline-size;
 
     @media (min-width: 992px) {
         margin-top: 10px;
+    }
+
+    @media (max-width: 991px) {
+        // Size slides from viewport width, not 100vw (avoids Android horizontal overflow)
+        --portfolio-slide-w: 86cqw;
     }
 
     &:focus {
@@ -638,14 +660,16 @@ header {
     backface-visibility: hidden;
 
     @media (max-width: 991px) {
-        padding-left: max(12px, 8vw);
-        padding-right: max(12px, 8vw);
+        gap: 12px;
+        padding-left: 0;
+        padding-right: 0;
     }
 }
 
 .portfolio-tricks-slide {
     flex: 0 0 auto;
     width: var(--portfolio-slide-w);
+    max-width: 100%;
     display: flex;
     justify-content: center;
     transition: transform 0.35s ease, opacity 0.35s ease;
@@ -661,6 +685,22 @@ header {
         opacity: 1;
         transform: scale(1.02) translateZ(0);
     }
+
+    @media (max-width: 991px) {
+        flex: 0 0 var(--portfolio-slide-w);
+
+        &.is-active {
+            transform: translateZ(0);
+        }
+    }
+
+    // Fallback when container queries are unavailable
+    @supports not (width: 1cqw) {
+        @media (max-width: 991px) {
+            width: min(84vw, 400px);
+            flex: 0 0 min(84vw, 400px);
+        }
+    }
 }
 
 .portfolio-tricks-slide-hit {
@@ -674,6 +714,11 @@ header {
     cursor: pointer;
     border-radius: 4px;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+    max-width: 100%;
+
+    @media (max-width: 991px) {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    }
 
     &:focus {
         outline: none;
