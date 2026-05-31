@@ -171,7 +171,7 @@ header {
         width: 100%;
         .header-content-inner {
             h1 {
-                font-family: 'Zhi Mang Xing', cursive;
+                font-family: 'Zhi Mang Xing', 'KaiTi', 'STKaiti', cursive;
                 font-weight: 400;
                 font-style: normal;
                 text-transform: none;
@@ -180,11 +180,15 @@ header {
                 color: #f14923;
                 // color: #f25633;
                 // color: #fdfdfd;
-                // ~2× typical Bootstrap h1 (~36px): mobile a bit smaller, desktop ~72px
-                font-size: 2.25rem;
                 line-height: 1.1;
-                @media (min-width: 768px) {
-                    font-size: 12.5rem;
+                -webkit-text-size-adjust: 100%;
+                text-size-adjust: 100%;
+                // Desktop hero size
+                font-size: 12.5rem;
+                @media (max-width: 767px) {
+                    // vmin + floor keeps Android Chrome aligned with iOS/desktop feel
+                    font-size: clamp(3rem, 11vmin, 4.5rem);
+                    line-height: 1.12;
                 }
             }
             // Top gap: between titles and divider. Bottom gap: between divider and subtitle.
@@ -202,6 +206,31 @@ header {
             }
         }
     }
+
+    // Mobile: vertically center hero block (Android was top-padded only → looked too high)
+    @media (max-width: 767px) {
+        min-height: 100vh;
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        @supports (height: 1dvh) {
+            min-height: 100dvh;
+        }
+
+        .header-content {
+            padding: 56px 15px 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-content-inner {
+            width: 100%;
+        }
+    }
+
     @media (min-width: 768px) {
         min-height: 100%;
         .header-content {
